@@ -1,18 +1,3 @@
-Certainly! Below is a comprehensive `documentation.md` file that describes **every API endpoint** in your **ExpenseAI FastAPI backend**, including:
-
-- Purpose  
-- HTTP method  
-- Request URL  
-- Request body (if any)  
-- Response format  
-- Example usage  
-
-This aligns with your **Expense.pdf** features and the implemented backend.
-
----
-
-## 📄 `documentation.md` — ExpenseAI API Documentation
-
 # ExpenseAI – API Reference
 
 This document describes all available RESTful endpoints for the **ExpenseAI** backend system built for the UraanAI Techathon. The system supports user registration, government scheme verification, expense tracking, fraud detection, and AI chatbot integration.
