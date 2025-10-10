@@ -17,7 +17,7 @@ This guide explains how to:
 ## ▶️ Step 1: Clone & Set Up Backend
 
 ```bash
-git clone https://github.com/rayanbabar/expenseai.git
+git clone https://github.com/RayanBabar/expenseai.git
 cd expenseai
 ```
 
