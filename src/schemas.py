@@ -23,6 +23,7 @@ class VerifyEligibilityResponse(BaseModel):
     cnic: str
     scheme_id: str
     eligible: bool
+    trust_score: float
     reasons: List[str]
     government_recommendation: str
 

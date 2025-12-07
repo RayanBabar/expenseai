@@ -59,7 +59,8 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 # --- Eligibility Verification ---
 @app.post("/verify", response_model=VerifyEligibilityResponse)
 def verify_eligibility_endpoint(request: VerifyEligibilityRequest, db: Session = Depends(get_db)):
-    eligible, reasons = verify_eligibility(db, request.cnic, request.scheme_id)
+    eligible, trust_score, reasons = verify_eligibility(db, request.cnic, request.scheme_id)
+    
     if eligible is None:
         raise HTTPException(status_code=404, detail="Scheme not found")
     
@@ -69,8 +70,9 @@ def verify_eligibility_endpoint(request: VerifyEligibilityRequest, db: Session =
         cnic=request.cnic,
         scheme_id=request.scheme_id,
         eligible=eligible,
+        trust_score=round(trust_score, 1), # Round for cleaner API output
         reasons=reasons,
-        government_recommendation="ACCEPT" if eligible else "REJECT"
+        government_recommendation="ACCEPT" if eligible and trust_score > 30 else "REJECT"
     )
 
 # --- Submit Government Decision & Trigger Expense ---
