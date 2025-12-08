@@ -1,8 +1,9 @@
 # 🚀 Instructions to Run ExpenseAI Backend & Integrate with Flutter
 
 This guide explains how to:
-1. Set up and run the **FastAPI backend** using `uv`
-2. Connect a **Flutter frontend** to the API
+1. Set up and run the **FastAPI backend**
+2. **Train the AI Models** locally
+3. Connect a **Flutter frontend** to the API
 
 ---
 
@@ -19,46 +20,55 @@ This guide explains how to:
 ```bash
 git clone https://github.com/RayanBabar/expenseai.git
 cd expenseai
-```
+````
 
----
+-----
 
 ## ▶️ Step 2: Install Dependencies with `uv`
 
 ```bash
-# Create virtual environment & install deps
+# Create virtual environment & install deps (including scikit-learn, pandas)
 uv sync
 ```
 
-> ✅ This uses `uv` for faster, reliable dependency resolution.
+-----
 
----
+## ▶️ Step 3: Train AI Models (Crucial Step)
 
-## ▶️ Step 3: Run the FastAPI Server
+Before running the server, you must generate the synthetic data and train the machine learning models. This creates the `.pkl` files needed for the API.
+
+```bash
+uv run python train_models.py
+```
+
+> **Output**: This will save `eligibility_model.pkl` and `trust_model.pkl` in the `src/` folder and generate performance graphs in the `results/` folder.
+
+-----
+
+## ▶️ Step 4: Run the FastAPI Server
 
 ```bash
 uv run -- uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-- The API will be live at: `http://localhost:8000`
-- Interactive docs (Swagger UI): `http://localhost:8000/docs`
+  - The API will be live at: `http://localhost:8000`
+  - Interactive docs (Swagger UI): `http://localhost:8000/docs`
 
-> 💡 On first run, the system auto-creates `expenseai.db` and seeds sample schemes.
+> 💡 The server loads the trained models on startup to perform real-time inference.
 
----
+-----
 
-## 📲 Step 4: Integrate with Flutter Frontend
+## 📲 Step 5: Integrate with Flutter Frontend
 
 ### A. Add Internet Permission (Android)
 
 In `android/app/src/main/AndroidManifest.xml`:
+
 ```xml
 <uses-permission android:name="android.permission.INTERNET" />
 ```
 
 ### B. Add HTTP Client (Dart)
-
-Use the `http` package:
 
 ```yaml
 # pubspec.yaml
@@ -66,15 +76,14 @@ dependencies:
   http: ^0.15.0
 ```
 
-### C. Example: Verify Eligibility from Flutter
+### C. Example: Verify Eligibility (with Trust Score)
 
 ```dart
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 Future<void> verifyEligibility(String cnic, String schemeId) async {
-  final url = Uri.parse('http://10.0.2.2:8000/verify'); // Android emulator
-  // For physical device or iOS: use your machine's IP (e.g., 192.168.x.x)
+  final url = Uri.parse('[http://10.0.2.2:8000/verify](http://10.0.2.2:8000/verify)'); // Android emulator
 
   final response = await http.post(
     url,
@@ -88,40 +97,30 @@ Future<void> verifyEligibility(String cnic, String schemeId) async {
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
     print('Eligible: ${data['eligible']}');
+    print('Trust Score: ${data['trust_score']}'); // 0 to 100
+    print('Reasons: ${data['reasons']}');
   } else {
     print('Error: ${response.body}');
   }
 }
 ```
 
-### 🔁 Replace `10.0.2.2` with your **local IP** if testing on a real device:
-```bash
-ipconfig  # Windows
-ifconfig   # Mac/Linux
-```
-
 ### D. Key API Endpoints for Flutter
 
-| Purpose                     | Method | Endpoint               | Body Example |
-|----------------------------|--------|------------------------|--------------|
-| Register User              | POST   | `/register`            | `{"cnic":"...","name":"...","role":"customer"}` |
-| Verify Eligibility         | POST   | `/verify`              | `{"cnic":"...","scheme_id":"rashan_scheme"}` |
-| Submit Govt Decision       | POST   | `/submit-proposal`     | `{"cnic":"...","scheme_id":"...","government_decision":"ACCEPTED"}` |
-| Get All Expenses           | GET    | `/expenses`            | — |
-| Chatbot Query (Demo)       | POST   | `/chatbot`             | `{"query":"Rashan status?","language":"ur"}` |
+| Purpose                     | Method | Endpoint               | Response Includes |
+|----------------------------|--------|------------------------|-------------------|
+| Register User              | POST   | `/register`            | User details |
+| Verify Eligibility         | POST   | `/verify`              | `eligible` (bool), `trust_score` (float) |
+| Submit Govt Decision       | POST   | `/submit-proposal`     | Status, Expense ID |
+| Get All Expenses           | GET    | `/expenses`            | List of expenses |
+| Chatbot Query              | POST   | `/chatbot`             | AI response |
 
----
+-----
 
 ## 🌐 Network Notes
 
-- **Emulator**: Use `10.0.2.2:8000`
-- **Physical Device**: Use your computer’s **local IP** (e.g., `192.168.1.10:8000`)
-- Ensure your **firewall allows port 8000**
+  - **Emulator**: Use `10.0.2.2:8000`
+  - **Physical Device**: Use your computer’s **local IP** (e.g., `192.168.1.10:8000`)
+  - Ensure your **firewall allows port 8000**.
 
----
-
-## 🧪 Testing
-
-Use **Postman** or **Swagger UI** (`/docs`) to test APIs before connecting Flutter.
-
----
+<!-- end list -->

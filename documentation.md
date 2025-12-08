@@ -64,13 +64,15 @@ Checks if a citizen (by CNIC) qualifies for a welfare scheme using synthetic dat
     "cnic": "1234567890123",
     "scheme_id": "rashan_scheme",
     "eligible": true,
+    "trust_score": 85.5,
     "reasons": [],
     "government_recommendation": "ACCEPT"
   }
   ```
-  - If not eligible, `reasons` lists violations (e.g., income too high)
-  - An `Application` record is saved in the database
-
+  - **eligible**: `true` or `false` (Predicted by Classifier).
+  - **trust_score**: A float between `0.0` and `100.0` (Predicted by Regressor). Higher is better.
+  - **reasons**: Explanations if the user is ineligible or has a low trust score (e.g., "History of defaults").
+  - **government_recommendation**: Logic combines eligibility + trust score (e.g., must be Eligible AND Trust > 30).
 - **Error Cases**:
   - `404 Not Found`: Invalid `scheme_id`
 
@@ -186,14 +188,11 @@ Verifies that the server and database are running.
 
 ---
 
-## 🧩 Notes on Data & Behavior
+## 🧩 Notes on ML & Data
 
-- **Synthetic Data**: Income, family size, and utility payments are randomly generated per CNIC on each `/verify` call.
-- **Fraud Detection Rules** (current):
-  - Expense total > PKR 5,000 → flagged as fraudulent
-  - (Future: add duplicate purchases, fake vendors, etc.)
-- **Vendors**: Randomly selected from registered `"vendor"` users.
-- **Invoicing**: Automatically generated upon `ACCEPTED` decision; stored in `expenses` table.
+- **Synthetic Data Generation**: The system uses `train_models.py` to generate thousands of synthetic records (income, credit history, loan defaults) to train the models.
+- **Deterministic Predictions**: During `/verify`, the user's profile is generated using their CNIC as a seed. This ensures that the same CNIC always yields the same synthetic financial profile and Trust Score, mimicking a real database lookup.
+- **Trust Score Factors**: The score increases with paid utility bills and credit history, and decreases with loan defaults and suspicious transactions.
 
 ---
 

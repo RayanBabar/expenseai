@@ -1,26 +1,26 @@
-# ExpenseAI – AI-Powered Government Expense Verification & Fraud Detection System
+# ExpenseAI - AI-Powered Government Expense Verification & Fraud Detection System
 
 **For UraanAI Techathon – Pakistan**
 
-ExpenseAI is a transparent, AI-assisted platform designed to reduce corruption in government welfare schemes by automating eligibility verification, expense tracking, and fraud detection using synthetic data and secure record-keeping. It ensures subsidies like the **Rashan Scheme** reach only deserving beneficiaries through biometric-verified, traceable transactions.
+ExpenseAI is a transparent, AI-assisted platform designed to reduce corruption in government welfare schemes by automating eligibility verification, expense tracking, and fraud detection. Unlike traditional rule-based systems, ExpenseAI utilizes **Machine Learning models** to predict beneficiary eligibility and assign a **Trust Score** based on financial history and behavioral patterns.
 
-Built with **FastAPI (Python)** and **SQLite**, this backend supports role-based portals for **Government**, **Vendors**, **Employees**, and **Local Customers**, and includes a foundation for an **AI Chatbot (Urdu/English)** for user interaction and fraud alerts.
+Built with **FastAPI (Python)**, **Scikit-Learn**, and **SQLite**, this backend supports role-based portals for **Government**, **Vendors**, **Employees**, and **Local Customers**, and includes a foundation for an **AI Chatbot (Urdu/English)**.
 
 ---
 
 ## 🌟 Core Features
 
-- ✅ **Automated Eligibility Verification**: Uses synthetic NADRA/WAPDA-like data to assess income, family size, and utility payment history.
-- ✅ **Government Scheme Management**: Pre-configured schemes (e.g., Rashan, Scholarships) with customizable rules.
+- ✅ **ML-Powered Eligibility Verification**: A trained Classifier predicts eligibility based on income, family size, and utility bill history (replacing static rules).
+- ✅ **AI Trust Scoring**: A Regressor model assigns a **Trust Score (0-100)** to every applicant based on credit history, loan defaults, and transaction patterns.
+- ✅ **Government Scheme Management**: Pre-configured schemes (e.g., Rashan, Scholarships) with customizable parameters.
 - ✅ **Expense Tracking & Invoicing**: Auto-generates invoices upon government approval; logs all transactions.
 - ✅ **Fraud Detection**: Flags fake purchases, excessive spending, or policy violations.
 - ✅ **Role-Based Access**:
-  - `government`: Approve/reject applications
-  - `vendor`: Fulfill orders, receive payments
-  - `employee`: Make purchases (within limits)
-  - `customer`: Receive benefits
-- ✅ **AI Chatbot Ready**: Endpoints prepared for Urdu/English NLP integration (Phase 2).
-- ✅ **100% Synthetic Data**: No real government APIs used — fully compliant with UraanAI Phase-1 rules.
+  - `government`: Approve/reject applications & view Trust Scores.
+  - `vendor`: Fulfill orders, receive payments.
+  - `employee`: Make purchases (within limits).
+  - `customer`: Receive benefits.
+- ✅ **100% Synthetic Data Pipeline**: Includes a training script that generates realistic synthetic data to train the AI models locally.
 
 ---
 
@@ -30,7 +30,7 @@ Built with **FastAPI (Python)** and **SQLite**, this backend supports role-based
 |--------------|-------------|
 | `users`      | Stores CNIC, name, role, spending limits |
 | `schemes`    | Government welfare programs with eligibility rules |
-| `applications` | Records eligibility checks and government decisions |
+| `applications` | Records eligibility checks, **Trust Scores**, and decisions |
 | `expenses`   | Tracks all purchases, vendor info, fraud flags, and receipts |
 
 ---
@@ -38,26 +38,31 @@ Built with **FastAPI (Python)** and **SQLite**, this backend supports role-based
 ## 🛠️ Tech Stack
 
 - **Backend**: FastAPI (Python)
-- **Database**: SQLite (file-based, no setup needed)
-- **Authentication**: Role-based (simplified for demo)
+- **AI/ML**: Scikit-Learn, Pandas, NumPy, Joblib
+- **Database**: SQLite (file-based)
+- **Package Manager**: `uv` (Astral)
 - **Deployment Ready**: Can be containerized or run locally
 
 ---
 
 ## 📁 Project Structure
-
 ```
-expenseai/
-├── main.py          # FastAPI app entrypoint
-├── src    
-    ├── models.py        # SQLAlchemy data models
-    ├── database.py      # DB engine & session setup
-    ├── schemas.py       # Pydantic request/response models
-    ├── crud.py          # Business logic (eligibility, fraud checks)
-├── expenseai.db     # Auto-generated SQLite database
-├── README.md
-├── documentation.md
-└── instructions.md
+expenseai/ 
+├── main.py # FastAPI app entrypoint 
+├── train_models.py # Script to generate synthetic data & train ML models 
+├── synthetic_data.csv # Generated dataset for training 
+├── results/ # Stores evaluation graphs (Confusion Matrix, Metrics) 
+├── src
+    ├── models.py # SQLAlchemy data models 
+    ├── database.py # DB engine & session setup 
+    ├── schemas.py # Pydantic request/response models 
+    ├── crud.py # Business logic (Loads ML models for inference) 
+    ├── eligibility_model.pkl # Trained Classifier 
+    ├── trust_model.pkl # Trained Regressor 
+    ├── expenseai.db # Auto-generated SQLite database 
+    ├── README.md 
+    ├── documentation.md 
+    └── instructions.md
 ```
 
 ---
@@ -65,5 +70,3 @@ expenseai/
 ## 📜 License
 
 This project is open-source and intended for educational and competition use (UraanAI Techathon 2025). MIT License.
-
----
