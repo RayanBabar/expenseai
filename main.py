@@ -8,17 +8,20 @@ import string
 
 from src.database import get_db
 from src.models import User, Scheme, Application, Expense
-from src.schemas import UserCreate, UserOut, VerifyEligibilityRequest, VerifyEligibilityResponse, SubmitProposalRequest, ExpenseRecord, ChatbotQuery
-from src.crud import verify_eligibility, create_application, create_expense_record
+from src.schemas import (
+    UserCreate, UserOut, 
+    VerifyEligibilityRequest, VerifyEligibilityResponse, 
+    TrustScoreRequest, TrustScoreResponse,
+    SubmitProposalRequest, ExpenseRecord, ChatbotQuery
+)
+from src.crud import check_scheme_eligibility, calculate_trust_score, create_application, create_expense_record
 
-app = FastAPI(title="ExpenseAI - UraanAI Techathon", version="1.0")
+app = FastAPI(title="ExpenseAI - UraanAI Techathon", version="2.0")
 
 # Initialize synthetic schemes on first run
 @app.on_event("startup")
 def init_schemes_and_vendors():
     db = next(get_db())
-    
-    # Seed schemes
     if db.query(Scheme).count() == 0:
         schemes = [
             Scheme(scheme_id="rashan_scheme", name="Rashan Scheme", description="Food support", max_income=50000, min_family_size=3),
@@ -27,7 +30,6 @@ def init_schemes_and_vendors():
         db.add_all(schemes)
         db.commit()
 
-    # Seed a default vendor
     if db.query(User).filter(User.role == "vendor").count() == 0:
         default_vendor = User(
             cnic="9999999999999",
@@ -48,7 +50,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         cnic=user.cnic,
         name=user.name,
         role=user.role,
-        is_active=(user.role == "government"),  # Gov auto-active; others need approval
+        is_active=(user.role == "government"),
         spending_limit=user.spending_limit
     )
     db.add(new_user)
@@ -56,23 +58,36 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-# --- Eligibility Verification ---
-@app.post("/verify", response_model=VerifyEligibilityResponse)
+# --- Endpoint 1: Scheme Eligibility Verification ---
+@app.post("/verify-eligibility", response_model=VerifyEligibilityResponse)
 def verify_eligibility_endpoint(request: VerifyEligibilityRequest, db: Session = Depends(get_db)):
-    eligible, trust_score, reasons = verify_eligibility(db, request.cnic, request.scheme_id)
+    eligible, reasons = check_scheme_eligibility(db, request.cnic, request.scheme_id)
     
     if eligible is None:
         raise HTTPException(status_code=404, detail="Scheme not found")
     
+    # We create the application record here based on basic eligibility
     create_application(db, request.cnic, request.scheme_id, eligible)
     
     return VerifyEligibilityResponse(
         cnic=request.cnic,
         scheme_id=request.scheme_id,
         eligible=eligible,
-        trust_score=round(trust_score, 1), # Round for cleaner API output
-        reasons=reasons,
-        government_recommendation="ACCEPT" if eligible and trust_score > 30 else "REJECT"
+        reasons=reasons
+    )
+
+# --- Endpoint 2: Trust Score & Identity Check ---
+@app.post("/trust-score", response_model=TrustScoreResponse)
+def get_trust_score(request: TrustScoreRequest):
+    # This endpoint checks identity (Phone vs CNIC) and returns a score
+    score, verified, reasons = calculate_trust_score(request.cnic, request.phone_number)
+    
+    return TrustScoreResponse(
+        cnic=request.cnic,
+        phone_number=request.phone_number,
+        is_identity_verified=verified,
+        trust_score=score,
+        reasons=reasons
     )
 
 # --- Submit Government Decision & Trigger Expense ---
@@ -90,21 +105,18 @@ def submit_proposal(request: SubmitProposalRequest, db: Session = Depends(get_db
     db.commit()
 
     if request.government_decision == "ACCEPTED":
-        # Simulate vendor selection
         vendors = db.query(User).filter(User.role == "vendor").all()
         if not vendors:
             raise HTTPException(status_code=500, detail="No vendors available")
         vendor = random.choice(vendors)
 
-        # Simulate products
         products = [
             {"item": "Wheat Flour", "qty": "10kg", "price": 1500},
             {"item": "Rice", "qty": "5kg", "price": 1000}
         ]
         total = sum(p["price"] for p in products)
 
-        # Fraud check (simplified)
-        is_fraud = total > 5000  # Example rule
+        is_fraud = total > 5000
         reason = "Excessive amount" if is_fraud else None
 
         expense_id = "EXP" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
@@ -138,12 +150,11 @@ def get_expenses(db: Session = Depends(get_db)):
         reason=e.reason
     ) for e in expenses]
 
-# --- AI Chatbot Stub (Urdu/English) ---
+# --- AI Chatbot Stub ---
 @app.post("/chatbot")
 def chatbot(query: ChatbotQuery):
-    # In Phase-2: integrate NLP model
     return {
-        "response": f"Received your {query.language} query: '{query.query}'. This is a demo. In production, AI would analyze fraud, purchases, or planning.",
+        "response": f"Received query: '{query.query}'. AI analysis placeholder.",
         "detected_intent": "general_inquiry"
     }
 

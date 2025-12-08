@@ -1,4 +1,4 @@
-# schemas.py
+# src/schemas.py
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -15,6 +15,7 @@ class UserOut(BaseModel):
     role: str
     is_active: bool
 
+# --- Eligibility Schemas ---
 class VerifyEligibilityRequest(BaseModel):
     cnic: str
     scheme_id: str
@@ -23,9 +24,19 @@ class VerifyEligibilityResponse(BaseModel):
     cnic: str
     scheme_id: str
     eligible: bool
+    reasons: List[str]
+
+# --- Trust Score Schemas ---
+class TrustScoreRequest(BaseModel):
+    cnic: str
+    phone_number: str
+
+class TrustScoreResponse(BaseModel):
+    cnic: str
+    phone_number: str
+    is_identity_verified: bool
     trust_score: float
     reasons: List[str]
-    government_recommendation: str
 
 class SubmitProposalRequest(BaseModel):
     cnic: str
