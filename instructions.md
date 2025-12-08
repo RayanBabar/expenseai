@@ -84,7 +84,7 @@ import 'dart:convert';
 
 // 1. Check Scheme Eligibility
 Future<void> checkEligibility(String cnic, String schemeId) async {
-  final url = Uri.parse('[http://10.0.2.2:8000/verify-eligibility](http://10.0.2.2:8000/verify-eligibility)');
+  final url = Uri.parse('http://10.0.2.2:8000/verify-eligibility');
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},
@@ -98,7 +98,7 @@ Future<void> checkEligibility(String cnic, String schemeId) async {
 
 // 2. Check Identity & Trust Score
 Future<void> checkTrustScore(String cnic, String phoneNumber) async {
-  final url = Uri.parse('[http://10.0.2.2:8000/trust-score](http://10.0.2.2:8000/trust-score)');
+  final url = Uri.parse('http://10.0.2.2:8000/trust-score');
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},
