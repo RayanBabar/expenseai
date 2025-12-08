@@ -20,7 +20,7 @@ This guide explains how to:
 ```bash
 git clone https://github.com/RayanBabar/expenseai.git
 cd expenseai
-````
+```
 
 -----
 
@@ -76,31 +76,39 @@ dependencies:
   http: ^0.15.0
 ```
 
-### C. Example: Verify Eligibility (with Trust Score)
+### C. Example: Verify Eligibility & Check Trust
 
 ```dart
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-Future<void> verifyEligibility(String cnic, String schemeId) async {
-  final url = Uri.parse('[http://10.0.2.2:8000/verify](http://10.0.2.2:8000/verify)'); // Android emulator
-
+// 1. Check Scheme Eligibility
+Future<void> checkEligibility(String cnic, String schemeId) async {
+  final url = Uri.parse('[http://10.0.2.2:8000/verify-eligibility](http://10.0.2.2:8000/verify-eligibility)');
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'cnic': cnic,
-      'scheme_id': schemeId,
-    }),
+    body: jsonEncode({'cnic': cnic, 'scheme_id': schemeId}),
+  );
+
+  if (response.statusCode == 200) {
+    print('Eligibility: ${jsonDecode(response.body)}');
+  }
+}
+
+// 2. Check Identity & Trust Score
+Future<void> checkTrustScore(String cnic, String phoneNumber) async {
+  final url = Uri.parse('[http://10.0.2.2:8000/trust-score](http://10.0.2.2:8000/trust-score)');
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'cnic': cnic, 'phone_number': phoneNumber}),
   );
 
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
-    print('Eligible: ${data['eligible']}');
-    print('Trust Score: ${data['trust_score']}'); // 0 to 100
-    print('Reasons: ${data['reasons']}');
-  } else {
-    print('Error: ${response.body}');
+    print('Identity Verified: ${data['is_identity_verified']}');
+    print('Trust Score: ${data['trust_score']}');
   }
 }
 ```
@@ -110,7 +118,8 @@ Future<void> verifyEligibility(String cnic, String schemeId) async {
 | Purpose                     | Method | Endpoint               | Response Includes |
 |----------------------------|--------|------------------------|-------------------|
 | Register User              | POST   | `/register`            | User details |
-| Verify Eligibility         | POST   | `/verify`              | `eligible` (bool), `trust_score` (float) |
+| **Verify Eligibility** | POST   | `/verify-eligibility`  | `eligible` (bool), `reasons` |
+| **Get Trust Score** | POST   | `/trust-score`         | `trust_score`, `is_identity_verified` |
 | Submit Govt Decision       | POST   | `/submit-proposal`     | Status, Expense ID |
 | Get All Expenses           | GET    | `/expenses`            | List of expenses |
 | Chatbot Query              | POST   | `/chatbot`             | AI response |
@@ -122,5 +131,3 @@ Future<void> verifyEligibility(String cnic, String schemeId) async {
   - **Emulator**: Use `10.0.2.2:8000`
   - **Physical Device**: Use your computer’s **local IP** (e.g., `192.168.1.10:8000`)
   - Ensure your **firewall allows port 8000**.
-
-<!-- end list -->
