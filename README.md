@@ -11,7 +11,9 @@ Built with **FastAPI (Python)**, **Scikit-Learn**, and **SQLite**, this backend 
 ## 🌟 Core Features
 
 - ✅ **ML-Powered Eligibility Verification**: A trained Classifier predicts eligibility based on income, family size, and utility bill history (replacing static rules).
-- ✅ **AI Trust Scoring**: A Regressor model assigns a **Trust Score (0-100)** to every applicant based on credit history, loan defaults, and transaction patterns.
+- ✅ **Identity & Trust Scoring**: 
+  - **Identity Check**: Verifies if the applicant's phone number matches their CNIC (Simulated State Bank/NADRA check).
+  - **Trust Score**: A Regressor model assigns a **Score (0-100)** based on credit history, loan defaults, and transaction patterns.
 - ✅ **Government Scheme Management**: Pre-configured schemes (e.g., Rashan, Scholarships) with customizable parameters.
 - ✅ **Expense Tracking & Invoicing**: Auto-generates invoices upon government approval; logs all transactions.
 - ✅ **Fraud Detection**: Flags fake purchases, excessive spending, or policy violations.
@@ -47,22 +49,22 @@ Built with **FastAPI (Python)**, **Scikit-Learn**, and **SQLite**, this backend 
 
 ## 📁 Project Structure
 ```
-expenseai/ 
-├── main.py # FastAPI app entrypoint 
-├── train_models.py # Script to generate synthetic data & train ML models 
-├── synthetic_data.csv # Generated dataset for training 
-├── results/ # Stores evaluation graphs (Confusion Matrix, Metrics) 
+expenseai/
+├── main.py \# FastAPI app entrypoint
+├── train\_models.py \# Script to generate synthetic data & train ML models
+├── synthetic\_data.csv \# Generated dataset for training
+├── results/ \# Stores evaluation graphs (Confusion Matrix, Metrics)
 ├── src
-    ├── models.py # SQLAlchemy data models 
-    ├── database.py # DB engine & session setup 
-    ├── schemas.py # Pydantic request/response models 
-    ├── crud.py # Business logic (Loads ML models for inference) 
-    ├── eligibility_model.pkl # Trained Classifier 
-    ├── trust_model.pkl # Trained Regressor 
-    ├── expenseai.db # Auto-generated SQLite database 
-    ├── README.md 
-    ├── documentation.md 
-    └── instructions.md
+    ├── models.py \# SQLAlchemy data models
+    ├── database.py \# DB engine & session setup
+    ├── schemas.py \# Pydantic request/response models
+    ├── crud.py \# Business logic (Loads ML models for inference)
+    ├── eligibility\_model.pkl \# Trained Classifier
+    ├── trust\_model.pkl \# Trained Regressor
+├── expenseai.db \# Auto-generated SQLite database
+├── README.md
+├── documentation.md
+└── instructions.md
 ```
 
 ---
